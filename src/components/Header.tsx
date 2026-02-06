@@ -22,7 +22,7 @@ export function Header({
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="text-white font-bold text-2xl tracking-tight">HN Sans AI</h1>
+            <h1 className="text-white font-bold text-2xl tracking-tight">HN NO AI</h1>
             <nav className="flex gap-2">
               {feeds.map(feed => (
                 <button
