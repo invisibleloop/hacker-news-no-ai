@@ -63,7 +63,8 @@ const AI_KEYWORDS = [
   "sam altman",
   "dario amodei",
   "demis hassabis",
-  "claw",
+  "openclaw",
+  "nanoclaw",
 ];
 
 function createKeywordPatterns(): RegExp[] {
