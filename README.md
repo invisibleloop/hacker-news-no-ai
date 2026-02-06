@@ -1,11 +1,13 @@
-# HN Sans AI
+# HN NO AI
 
 A Hacker News clone that filters out all AI-related posts, showing only non-AI content.
 
 ## Features
 
 - **Automatic AI Filtering**: Filters out posts related to AI, machine learning, LLMs, and related topics
-- **Multiple Feeds**: Browse Top, New, or Best stories from Hacker News
+- **Multiple Feeds**: Browse Top, New, Best, or Show HN stories from Hacker News
+- **URL-Based Navigation**: Each feed has its own bookmarkable URL
+- **Report AI Content**: Help improve the filter by reporting missed AI posts
 - **Dark Mode**: Toggle between light and dark themes
 - **Filter Statistics**: See how many AI posts were hidden
 - **Infinite Loading**: Load more stories with a single click
