@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { FeedType } from './utils/api';
 import { useStories } from './hooks/useStories';
 import { Header } from './components/Header';
@@ -64,6 +65,7 @@ function App() {
         />
       </main>
       <Footer />
+      <Analytics />
     </div>
   );
 }
