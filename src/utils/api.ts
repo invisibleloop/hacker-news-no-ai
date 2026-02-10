@@ -14,7 +14,9 @@ export interface HNStory {
 export type FeedType = 'top' | 'new' | 'best' | 'show';
 
 // Cache configuration
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in-memory
+const LS_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes localStorage
+
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -40,6 +42,29 @@ function setCache<T>(key: string | number, data: T, cache: Map<any, CacheEntry<T
   cache.set(key, { data, timestamp: Date.now() });
 }
 
+function lsGet<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const entry: CacheEntry<T> = JSON.parse(raw);
+    if (Date.now() - entry.timestamp > LS_CACHE_DURATION) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return entry.data;
+  } catch {
+    return null;
+  }
+}
+
+function lsSet<T>(key: string, data: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {
+    // localStorage may be full or unavailable; silently skip
+  }
+}
+
 async function fetchJSON<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -49,27 +74,37 @@ async function fetchJSON<T>(url: string): Promise<T> {
 }
 
 export async function fetchStoryIds(feedType: FeedType): Promise<number[]> {
-  // Check cache first
+  // Check in-memory cache first
   const cached = getCached(feedType, feedCache);
-  if (cached) {
-    return cached;
+  if (cached) return cached;
+
+  // Fall back to localStorage cache
+  const lsCached = lsGet<number[]>(`hn_feed_${feedType}`);
+  if (lsCached) {
+    setCache(feedType, lsCached, feedCache);
+    return lsCached;
   }
 
   // Fetch from API
   const url = `${BASE_URL}/${feedType}stories.json`;
   const ids = await fetchJSON<number[]>(url);
 
-  // Store in cache
   setCache(feedType, ids, feedCache);
+  lsSet(`hn_feed_${feedType}`, ids);
 
   return ids;
 }
 
 export async function fetchStory(id: number): Promise<HNStory | null> {
-  // Check cache first
+  // Check in-memory cache first
   const cached = getCached(id, storyCache);
-  if (cached) {
-    return cached;
+  if (cached) return cached;
+
+  // Fall back to localStorage cache
+  const lsCached = lsGet<HNStory>(`hn_story_${id}`);
+  if (lsCached) {
+    setCache(id, lsCached, storyCache);
+    return lsCached;
   }
 
   try {
@@ -77,8 +112,8 @@ export async function fetchStory(id: number): Promise<HNStory | null> {
     const story = await fetchJSON<HNStory>(url);
 
     if (story && story.type === 'story') {
-      // Store in cache
       setCache(id, story, storyCache);
+      lsSet(`hn_story_${id}`, story);
       return story;
     }
 
